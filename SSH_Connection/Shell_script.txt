@@ -1,0 +1,56 @@
+# Pull the latest Ubuntu image from Docker Hub
+docker pull ubuntu
+
+# Run the first Ubuntu container named 'container1' in interactive mode
+docker run -it --name container1 ubuntu
+
+# Run the second Ubuntu container named 'container2' in interactive mode
+docker run -it --name container2 ubuntu
+
+# Start the first container (container1)
+docker start container1
+
+# Execute a bash shell in container1
+docker exec -it container1 bash
+
+# Update the package list in container1
+apt-get update
+
+# Install the OpenSSH server and nano text editor in container1
+apt-get install openssh-server nano
+
+# Open the SSH daemon configuration file in nano for editing
+nano /etc/ssh/sshd_config
+
+# Uncomment the line 'PermitRootLogin yes' to allow root login via SSH
+# (Make sure to save the changes in nano)
+
+# Check the root user's password entry in the shadow file
+cat /etc/shadow | grep root
+
+# Set a new password for the root user
+passwd root
+
+# Start the SSH service in container1
+service ssh start
+
+# Check the status of all services to ensure SSH is running
+service --status-all
+
+# Inspect container1 to find its IP address
+docker inspect container1 | grep IPAddress
+
+# Start the second container (container2)
+docker start container2
+
+# Execute a bash shell in container2
+docker exec -it container2 bash
+
+# Update the package list in container2
+apt-get update
+
+# Install the OpenSSH client in container2 to enable SSH connections
+apt-get install openssh-client
+
+# Attempt to SSH into container1 from container2 using its IP address
+ssh root@172.17.0.2
