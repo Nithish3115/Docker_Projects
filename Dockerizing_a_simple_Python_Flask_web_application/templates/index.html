@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>தமிழ் உரையாடல்</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <!-- Google Tamil Keyboard -->
+    <script src="https://www.google.com/jsapi"></script>
+    <script>
+        google.load("elements", "1", {packages: "transliteration"});
+        function onLoad() {
+            var options = {
+                sourceLanguage: 'en',
+                destinationLanguage: ['ta'],
+                transliterationEnabled: true
+            };
+            var control = new google.elements.transliteration.TransliterationControl(options);
+            control.makeTransliteratable(['userInput']);
+            window.tamilKeyboard = control;
+        }
+        google.setOnLoadCallback(onLoad);
+
+        function toggleTamilKeyboard() {
+            if (window.tamilKeyboard) {
+                var enabled = window.tamilKeyboard.isTransliterationEnabled();
+                window.tamilKeyboard.enableTransliteration(!enabled);
+                document.getElementById('keyboardToggle').innerText = enabled ? "தமிழ் தட்டச்சு இயக்கு" : "தமிழ் தட்டச்சு நிறுத்து";
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>தமிழ் உரையாடல்</h1>
+        <p>தமிழில் உரையாடலாம்! கீழே உள்ள பொத்தானை அழுத்தி தமிழ் தட்டச்சு செய்யலாம்.</p>
+
+        <div class="input-box">
+            <textarea id="userInput" placeholder="உங்கள் செய்தியை இங்கே தட்டச்சு செய்யவும்..."></textarea>
+            <div class="buttons">
+                <button onclick="sendMessage()">அனுப்பு</button>
+                <button id="keyboardToggle" onclick="toggleTamilKeyboard()">தமிழ் தட்டச்சு இயக்கு</button>
+            </div>
+        </div>
+
+        <h2>பதில்:</h2>
+        <div id="response" class="response-box"></div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput').value;
+            const responseElement = document.getElementById('response');
+
+            if (!userInput) {
+                alert("தயவுசெய்து ஒரு செய்தியை உள்ளிடவும்!");
+                return;
+            }
+
+            responseElement.innerHTML = "<p>பதில் உருவாக்கப்படுகிறது...</p>"; // Show loading state
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userInput }),
+                });
+
+                const data = await response.json();
+                if (data.response) {
+                    responseElement.innerHTML = formatResponse(data.response);
+                } else if (data.error) {
+                    responseElement.innerHTML = `<p class="error">பிழை: ${data.error}</p>`;
+                } else {
+                    responseElement.innerHTML = "<p class='error'>பதில் கிடைக்கவில்லை.</p>";
+                }
+            } catch (error) {
+                responseElement.innerHTML = `<p class="error">பிழை: ${error.message}</p>`;
+            }
+        }
+
+        function formatResponse(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold text using **text**
+                .replace(/\n/g, "<br>"); // New lines to <br>
+        }
+    </script>
+</body>
+</html>
